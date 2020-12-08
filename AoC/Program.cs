@@ -12,7 +12,7 @@ namespace AoC
     {
         static void Main(string[] args)
         {
-            Solve8();
+            Solve4();
         }
 
         public static void Solve1()
@@ -191,14 +191,14 @@ namespace AoC
                                     if (val < 59 || val > 76)
                                         fail = true;
                                 }
-
-                                if (hgt.EndsWith("cm"))
+                                else if (hgt.EndsWith("cm"))
                                 {
                                     hgt = hgt.Replace("cm", "");
                                     int val = Convert.ToInt32(hgt);
                                     if (val < 150 || val > 193)
                                         fail = true;
                                 }
+                                else fail = true;
                             }
 
                             if (g.Groups[1].ToString() == "hcl")
@@ -236,6 +236,7 @@ namespace AoC
 
             Console.WriteLine("Part1: " + count.ToString());
             Console.WriteLine("Part2: " + count2.ToString());
+            Console.ReadLine();
         }
 
         static public void Solve5()
