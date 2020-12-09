@@ -12,7 +12,7 @@ namespace AoC
     {
         static void Main(string[] args)
         {
-            Solve4();
+            Solve9();
         }
 
         public static void Solve1()
@@ -424,6 +424,55 @@ namespace AoC
             var lines = File.ReadAllLines("input8.txt");
             Find8Stop(lines, new HashSet<int>(), 0, 0, true, false);
             Find8Stop(lines, new HashSet<int>(), 0, 0, false, true);
+            Console.ReadLine();
+        }
+
+        public static T[] SubArray<T>( T[] data, int index, int length)
+        {
+            T[] result = new T[length];
+            Array.Copy(data, index, result, 0, length);
+            return result;
+        }
+
+        public static void Solve9()
+        {
+            var nums = (from e in File.ReadAllLines("input9.txt") select Convert.ToInt64(e)).ToArray();
+            int preamble = 25;
+            Int64 res = 0;
+
+            for (int i = preamble; i < nums.Length; i++)
+            {
+                bool found = false;
+                var sum = nums[i];
+                for (int j = i-1; j >= i - preamble && !found; j-- )
+                    for (int k = j - 1; k >= i - preamble && !found; k--)
+                        if (nums[j] + nums[k] == sum)
+                            found = true;
+
+                if (!found)
+                {
+                    Console.WriteLine("9a: "+ sum);
+                    res = sum;
+                    break;
+                }
+            }
+
+            for (int i = 0; i < nums.Length - 1; i++)
+            {
+                Int64 sum = nums[i];
+                for (int j = i + 1; j < nums.Length - 1; j++)
+                {
+                    sum += nums[j];
+                    if (sum == res)
+                    {
+                        var cset = SubArray(nums,i, j - i + 1);
+                        Console.WriteLine("9b: " + (cset.Max() + cset.Min()).ToString());
+                        break;
+                    }
+                }
+            }
+
+
             Console.ReadLine();
         }
     }
