@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Xml.Schema;
 
 namespace AoC
 {
@@ -12,7 +15,7 @@ namespace AoC
     {
         static void Main(string[] args)
         {
-            Solve9();
+            Solve11();
         }
 
         public static void Solve1()
@@ -427,7 +430,7 @@ namespace AoC
             Console.ReadLine();
         }
 
-        public static T[] SubArray<T>( T[] data, int index, int length)
+        public static T[] SubArray<T>(T[] data, int index, int length)
         {
             T[] result = new T[length];
             Array.Copy(data, index, result, 0, length);
@@ -444,14 +447,14 @@ namespace AoC
             {
                 bool found = false;
                 var sum = nums[i];
-                for (int j = i-1; j >= i - preamble && !found; j-- )
-                    for (int k = j - 1; k >= i - preamble && !found; k--)
-                        if (nums[j] + nums[k] == sum)
-                            found = true;
+                for (int j = i - 1; j >= i - preamble && !found; j--)
+                for (int k = j - 1; k >= i - preamble && !found; k--)
+                    if (nums[j] + nums[k] == sum)
+                        found = true;
 
                 if (!found)
                 {
-                    Console.WriteLine("9a: "+ sum);
+                    Console.WriteLine("9a: " + sum);
                     res = sum;
                     break;
                 }
@@ -465,13 +468,201 @@ namespace AoC
                     sum += nums[j];
                     if (sum == res)
                     {
-                        var cset = SubArray(nums,i, j - i + 1);
+                        var cset = SubArray(nums, i, j - i + 1);
                         Console.WriteLine("9b: " + (cset.Max() + cset.Min()).ToString());
                         break;
                     }
                 }
             }
 
+
+            Console.ReadLine();
+        }
+
+
+        public static Int64 SearchIn10(Int64[] nums, int pos, Int64 valAtPos, Int64 max, Int64[] burned)
+        {
+            if (pos >= 0 && burned[pos] > -1)
+                return burned[pos];
+
+            Int64 res = 0;
+            for (int i = pos + 1; i < nums.Length; i++)
+            {
+                if (nums[i] - valAtPos <= 3)
+                    res += SearchIn10(nums, i, nums[i], max, burned);
+                else
+                    break;
+            }
+
+            if (max - valAtPos <= 3)
+                res++;
+
+            if (pos >= 0)
+                burned[pos] = res;
+            return res;
+        }
+
+
+        public static void Solve10()
+        {
+            var nums = (from e in File.ReadAllLines("input10.txt") select Convert.ToInt64(e)).OrderBy(ele => ele).ToArray();
+            int jrange = 3;
+
+            var tab = new int[jrange + 1];
+            var device = nums.Max() + 3;
+
+            long jolt = 0;
+            for (int i = 0; i < nums.Length; i++)
+            {
+                var diff = nums[i] - jolt;
+                if (diff <= jrange)
+                {
+                    tab[diff]++;
+                    jolt = nums[i];
+                }
+                else
+                {
+                    Console.WriteLine("no connection possible at {%1} with value {%2}", i, diff);
+                }
+            }
+
+            var burned = (from i in nums select -1L).ToArray();
+
+            Console.WriteLine("10a " + tab[1] * (tab[3] + 1));
+            Console.WriteLine("10b " + SearchIn10(nums, -1, 0, device, burned));
+            Console.ReadLine();
+        }
+
+        public static void Solve11()
+        {
+            var seats = (from row in File.ReadAllLines("input11.txt") select row.ToCharArray()).ToArray();
+            var lastseats = seats;
+            int count = 0;
+            bool changed = false;
+
+            do
+            {
+                changed = false;
+                lastseats = seats.Select(row => row.Select(ele => ele).ToArray()).ToArray();
+                for (int i = 0; i < lastseats.Length; i++)
+                for (int j = 0; j < lastseats[i].Length; j++)
+                {
+                    seats[i][j] = lastseats[i][j];
+
+                    if (lastseats[i][j] == 'L' && occupiedNeighbours(lastseats, i, j,1) == 0)
+                    {
+                        seats[i][j] = '#';
+                        changed = true;
+                    }
+
+                    if (lastseats[i][j] == '#' && occupiedNeighbours(lastseats, i, j,1) >= 4)
+                    {
+                        seats[i][j] = 'L';
+                        changed = true;
+                    }
+                }
+
+                count = 0;
+                for (int i = 0; i < seats.Length; i++)
+                for (int j = 0; j < seats[i].Length; j++)
+                    if (seats[i][j] == '#')
+                        count++;
+
+                Console.WriteLine("11a " + count);
+            } while (changed);
+
+            Console.WriteLine("11a " + count);
+            //            Console.WriteLine("10b " + SearchIn10(nums, -1, 0, device, burned));
+
+            seats = (from row in File.ReadAllLines("input11.txt") select row.ToCharArray()).ToArray();
+            lastseats = seats;
+            count = 0;
+            changed = false;
+
+            do
+            {
+                changed = false;
+                lastseats = seats.Select(row => row.Select(ele => ele).ToArray()).ToArray();
+
+                //foreach (var row in lastseats)
+                //    Console.WriteLine(row);
+
+                for (int i = 0; i < lastseats.Length; i++)
+                for (int j = 0; j < lastseats[i].Length; j++)
+                {
+                    seats[i][j] = lastseats[i][j];
+
+                    if (lastseats[i][j] == 'L' && occupiedNeighbours(lastseats, i, j, seats.Length) == 0)
+                    {
+                        seats[i][j] = '#';
+                        changed = true;
+                    }
+
+                    if (lastseats[i][j] == '#' && occupiedNeighbours(lastseats, i, j, seats.Length) >= 5)
+                    {
+                        seats[i][j] = 'L';
+                        changed = true;
+                    }
+                }
+
+                count = 0;
+                for (int i = 0; i < seats.Length; i++)
+                for (int j = 0; j < seats[i].Length; j++)
+                    if (seats[i][j] == '#')
+                        count++;
+
+                Console.WriteLine("11b " + count);
+            } while (changed);
+
+            Console.WriteLine("11b " + count);
+
+
+            Console.ReadLine();
+        }
+
+        private static int occupiedNeighbours(char[][] seats, int i, int j, int range)
+        {
+            int count = 0;
+            for (int y = -1; y < 2; y++)
+            for (int x = -1; x < 2; x++)
+                if (!(y == 0 && x == 0))
+                    for (int r = 1; r <= range; r++)
+                        if (y*r + i >= 0 && y*r + i < seats.Length && x*r + j >= 0 && x*r + j < seats[y*r+i].Length)
+                        {
+                            //Console.WriteLine(x+" "+y+" "+ seats[y][x]);
+
+                            if (seats[y*r+i][x*r+j] == '#')
+                            {
+                                count++;
+                                break;
+                            }
+
+                            if (seats[y*r+i][x*r+j] == 'L')
+                                break;
+                        }
+
+            //Console.WriteLine("neighbours " + count);
+            return count;
+        }
+
+        public static void SolveBarl()
+        {
+            var seats = File.ReadAllText("inputbarl.txt");
+            var reg = new Regex(@"\d+\s+(L|B)\s+(([\w-]+\s)+)(D\s?\d+)\s.*\n");
+
+            var matches = reg.Matches(seats);
+
+            int count = 0;
+            string content = "";
+
+            foreach (Match line in matches)
+            {
+                content += line.Groups[2] + "; " + line.Groups[4] + "; 10g\n";
+                count++;
+                //if (count > 10)
+                 //   break;
+            }
+            File.WriteAllText("barl",content);
 
             Console.ReadLine();
         }
