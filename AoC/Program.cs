@@ -4,6 +4,7 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -15,7 +16,7 @@ namespace AoC
     {
         static void Main(string[] args)
         {
-            Solve11();
+            Solve15();
         }
 
         public static void Solve1()
@@ -664,6 +665,35 @@ namespace AoC
             }
             File.WriteAllText("barl",content);
 
+            Console.ReadLine();
+        }
+
+        public static void Solve15()
+        {
+            var nums = (from e in File.ReadAllText("input15.txt").Split(',') select Convert.ToInt32(e)).ToArray();
+
+            Dictionary<int, int> lastSpokenBeforeLast = new Dictionary<int, int>();
+            for (int i = 0; i < nums.Length-1; i++)
+                    lastSpokenBeforeLast[nums[i]] = i;
+
+            int last = nums.Last();
+            int current = 0;
+
+            for (int i = nums.Length; i < 30000000; i++)
+            {
+                if (lastSpokenBeforeLast.ContainsKey(last))
+                     current = i - 1 - lastSpokenBeforeLast[last];
+                else
+                    current = 0;
+
+                lastSpokenBeforeLast[last] = i - 1;
+                last = current;
+
+                if ( i == 2020-1)
+                   Console.WriteLine("15a: " + current);
+            }
+
+            Console.WriteLine("15b: " + current);
             Console.ReadLine();
         }
     }
